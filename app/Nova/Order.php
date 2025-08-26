@@ -228,10 +228,10 @@ class Order extends Resource
             $model->statuses()->attach($request->status);
 
             if ($request->status == 2) {
-                Product1C::complete_order($model);
-                $hdm = new OnlineHdm($model->id);
-                $hdm->createHdm();
-//                if ($model->total >= 10000) {
+//                Product1C::complete_order($model);
+//                $hdm = new OnlineHdm($model->id);
+//                $hdm->createHdm();
+//                if ($model->total >= 15000) {
 //                    try {
 //                        Mail::to($model->email)
 //                            ->bcc('domusonline.web@gmail.com')
