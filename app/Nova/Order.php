@@ -228,9 +228,9 @@ class Order extends Resource
             $model->statuses()->attach($request->status);
 
             if ($request->status == 2) {
-//                Product1C::complete_order($model);
-//                $hdm = new OnlineHdm($model->id);
-//                $hdm->createHdm();
+                Product1C::complete_order($model);
+                $hdm = new OnlineHdm($model->id);
+                $hdm->createHdm();
 //                if ($model->total >= 15000) {
 //                    try {
 //                        Mail::to($model->email)
