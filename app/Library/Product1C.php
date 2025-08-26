@@ -148,7 +148,7 @@ class Product1C
             [
                 'blocking' => true,
                 'headers' => array(
-                    'Authorization' => 'Basic ' . base64_encode('Eshop:5tfEKwP9')
+                    'Authorization' => 'Basic ' . base64_encode('Eshop:cY4meryb')
                 ),
                 'body' => $data
             ]

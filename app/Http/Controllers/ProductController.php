@@ -64,7 +64,7 @@ class ProductController extends Controller
                     'connect_timeout' => 2, // Connection timeout
                     'blocking' => true,
                     'headers' => array(
-                        'Authorization' => 'Basic ' . base64_encode('Eshop:5tfEKwP9')
+                        'Authorization' => 'Basic ' . base64_encode('Eshop:cY4meryb')
                     )
                 ]
             );
