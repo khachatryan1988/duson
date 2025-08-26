@@ -1,0 +1,27 @@
+{
+    "version": "1.0",
+    "name": "webs/transaction",
+    "description": "Ecommerce transaction basic functionality",
+    "authors": [
+        {
+            "name": "Dav Hovsepian",
+            "email": "dav.hovsepian@gmail.com"
+        }
+    ],
+    "require": {
+        "omnipay/common": "^3"
+    },
+    "require-dev": {
+        "omnipay/tests": "^3"
+    },
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Webs\\Transaction\\": "src/app",
+            "Omnipay\\Ameria\\": "src/payments/omnipay-ameria",
+            "Omnipay\\Ineco\\": "src/payments/omnipay-ineco",
+            "Omnipay\\Idram\\": "src/payments/omnipay-idram",
+            "Omnipay\\Arca\\": "src/payments/omnipay-arca"
+        }
+    }
+}
