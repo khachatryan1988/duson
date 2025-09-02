@@ -46,4 +46,8 @@ class Order extends Model
     public function getStatusAttribute(){
         return $this->statuses()->orderBy('id', 'desc')->first();
     }
+    public function getHasHdmAttribute(): bool
+    {
+        return !empty($this->el_hdm);
+    }
 }

@@ -23,6 +23,11 @@ use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
+use App\Nova\Actions\HandleHdm;
+use Laravel\Nova\Fields\Number;
+use Laravel\Nova\Fields\Boolean;
+use App\Nova\Actions\SendHdm;
+use App\Nova\Actions\ReverseHdm;
 
 class Order extends Resource
 {
@@ -77,6 +82,7 @@ class Order extends Resource
             Text::make('Phone', 'phone'),
             Text::make('Status', 'status.title'),
             Text::make('Total', 'total')->filterable(),
+            Text::make('HDM', 'el_hdm'),
         ];
     }
 
@@ -217,9 +223,21 @@ class Order extends Resource
      * @param \Laravel\Nova\Http\Requests\NovaRequest $request
      * @return array
      */
-    public function actions(NovaRequest $request)
+    public function actions(Request $request)
     {
-        return [];
+        return [
+            (new \App\Nova\Actions\SendHdm())
+                ->showOnTableRow()->showOnIndex()
+                ->canRun(function ($request, $order) {
+                    return !$order->has_hdm; // el_hdm пуст
+                }),
+
+            (new \App\Nova\Actions\ReverseHdm())
+                ->showOnTableRow()->showOnIndex()
+                ->canRun(function ($request, $order) {
+                    return (bool) $order->has_hdm; // el_hdm заполнен
+                }),
+        ];
     }
 
     public static function beforeUpdate(Request $request, $model)
@@ -227,10 +245,10 @@ class Order extends Resource
         if ($model->status->id != $request->status) {
             $model->statuses()->attach($request->status);
 
-            if ($request->status == 2) {
-                Product1C::complete_order($model);
-                $hdm = new OnlineHdm($model->id);
-                $hdm->createHdm();
+//            if ($request->status == 2) {
+//                Product1C::complete_order($model);
+//                $hdm = new OnlineHdm($model->id);
+//                $hdm->createHdm();
 //                if ($model->total >= 15000) {
 //                    try {
 //                        Mail::to($model->email)
@@ -246,11 +264,11 @@ class Order extends Resource
 //                        ]);
 //                    }
 //                }
-            }
-            if ($request->status == 8) {
-                $hdm = new OnlineHdm($model->id);
-                $hdm->reverseHdm();
-            }
+//            }
+//            if ($request->status == 8) {
+//                $hdm = new OnlineHdm($model->id);
+//                $hdm->reverseHdm();
+//            }
         }
         $request->request->remove('status');
     }
