@@ -254,21 +254,21 @@ class Order extends Resource
                 Product1C::complete_order($model);
 //                $hdm = new OnlineHdm($model->id);
 //                $hdm->createHdm();
-//                if ($model->total >= 15000) {
-//                    try {
-//                        Mail::to($model->email)
-//                            ->bcc('domusonline.web@gmail.com')
-//                            ->send(new SendAdminMail($model->invoice_no));
-//                    } catch (\Exception $e) {
-//                        file_put_contents(storage_path('logs/mail.log'), 'Failed to send email for Order ' . $model->invoice_no . ': ' . $e->getMessage() . ' at ' . now()->format('d.m.Y H:i:s') . "\n", FILE_APPEND);
-//
-//                        return view('order')->with([
-//                            'order' => $model->invoice_no,
-//                            'emailStatus' => 'failed',
-//                            'errorMessage' => $e->getMessage(),
-//                        ]);
-//                    }
-//                }
+                if ($model->total) {
+                    try {
+                        Mail::to($model->email)
+                            ->bcc('domusonline.web@gmail.com')
+                            ->send(new SendAdminMail($model->invoice_no));
+                    } catch (\Exception $e) {
+                        file_put_contents(storage_path('logs/mail.log'), 'Failed to send email for Order ' . $model->invoice_no . ': ' . $e->getMessage() . ' at ' . now()->format('d.m.Y H:i:s') . "\n", FILE_APPEND);
+
+                        return view('order')->with([
+                            'order' => $model->invoice_no,
+                            'emailStatus' => 'failed',
+                            'errorMessage' => $e->getMessage(),
+                        ]);
+                    }
+                }
             }
 //            if ($request->status == 8) {
 //                $hdm = new OnlineHdm($model->id);
