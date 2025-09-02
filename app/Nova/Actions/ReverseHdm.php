@@ -24,7 +24,10 @@ class ReverseHdm extends Action
                 $hdm = new OnlineHdm($model->id);
                 $hdm->reverseHdm();
 
-                $model->forceFill(['el_hdm' => null])->save();
+                $model->forceFill([
+                    'el_hdm' => null,
+                    'hdm_link' => null,
+                ])->save();
             } catch (\Throwable $e) {
                 return Action::danger("Failed to reverse HDM for {$model->invoice_no}: {$e->getMessage()}");
             }

@@ -250,8 +250,8 @@ class Order extends Resource
         if ($model->status->id != $request->status) {
             $model->statuses()->attach($request->status);
 
-//            if ($request->status == 2) {
-//                Product1C::complete_order($model);
+            if ($request->status == 2) {
+                Product1C::complete_order($model);
 //                $hdm = new OnlineHdm($model->id);
 //                $hdm->createHdm();
 //                if ($model->total >= 15000) {
@@ -269,7 +269,7 @@ class Order extends Resource
 //                        ]);
 //                    }
 //                }
-//            }
+            }
 //            if ($request->status == 8) {
 //                $hdm = new OnlineHdm($model->id);
 //                $hdm->reverseHdm();
