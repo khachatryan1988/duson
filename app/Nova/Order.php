@@ -71,6 +71,7 @@ class Order extends Resource
     public function fieldsForIndex()
     {
         return [
+            Text::make('Id', 'id'),
             DateTime::make('Date', 'updated_at')->sortable()->displayUsing(function ($field) {
                 return $field->format('D d-m-Y H:i:s');
             }),
