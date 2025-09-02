@@ -157,12 +157,16 @@ class OnlineHdm
 
         if ($response && $response->getStatusCode() === 200) {
             $body = json_decode($response->getBody()->getContents(), true);
+            $link = data_get($body, 'link');
             $receiptId = $body['res']['receiptId'];
             $logMessage = 'Response: ' . print_r($body, true) . '  ' . now()->format('d.m.Y H:i:s') . "\n";
             File::append(storage_path('logs/hdm.log'), $logMessage);
             $order = Order::find($this->orderID);
             $order->el_hdm = $receiptId;
+            $order->hdm_link = $link;
             $order->save();
+
+
 
             $url = 'https://store.payx.am/api/Hdm/SendEmail';
 

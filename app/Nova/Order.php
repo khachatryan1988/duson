@@ -151,6 +151,10 @@ class Order extends Resource
             Text::make('Address', 'address_info')->readonly()->hideFromIndex(),
             Text::make('Notes', 'notes')->hideFromIndex(),
             Text::make('HDM', 'el_hdm')->hideFromIndex(),
+            Text::make('HDM Link', 'hdm_link')
+                ->onlyOnDetail()
+                ->asHtml()
+                ->displayUsing(fn ($v) => $v ? "<a href=\"{$v}\" target=\"_blank\">Open Fiscal (PDF)</a>" : '—')
         ];
     }
 
