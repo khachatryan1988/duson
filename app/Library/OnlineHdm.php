@@ -146,69 +146,80 @@ class OnlineHdm
         return $response;
     }
 
-    public function createHdm(): void
+    public function createHdm(bool $sendEmails = true): void
     {
         $token = $this->getToken();
-        $data = $this->getOrderData();
+        $data  = $this->getOrderData();
 
-        $url = 'https://store.payx.am/api/Hdm/Print';
-
-        $response = $this->makeApiRequest('POST', $url, $data, $token);
+        $urlPrint = 'https://store.payx.am/api/Hdm/Print';
+        $response = $this->makeApiRequest('POST', $urlPrint, $data, $token);
 
         if ($response && $response->getStatusCode() === 200) {
             $body = json_decode($response->getBody()->getContents(), true);
             $link = data_get($body, 'link');
-            $receiptId = $body['res']['receiptId'];
-            $logMessage = 'Response: ' . print_r($body, true) . '  ' . now()->format('d.m.Y H:i:s') . "\n";
-            File::append(storage_path('logs/hdm.log'), $logMessage);
+            $receiptId = data_get($body, 'res.receiptId');
+
+            File::append(
+                storage_path('logs/hdm.log'),
+                'Response: '.print_r($body, true).'  '.now()->format('d.m.Y H:i:s')."\n"
+            );
+
             $order = Order::find($this->orderID);
-            $order->el_hdm = $receiptId;
-            $order->hdm_link = $link;
-            $order->save();
+            if ($order) {
+                $order->el_hdm   = $receiptId;
+                $order->hdm_link = $link;
+                $order->save();
+            }
 
+            if ($sendEmails && $receiptId && $order) {
+                $urlEmail = 'https://store.payx.am/api/Hdm/SendEmail';
 
+                $emails = array_values(array_filter([
+                    'domusonline.web@gmail.com',
+                    $order->email,
+                ]));
 
-            $url = 'https://store.payx.am/api/Hdm/SendEmail';
+                foreach ($emails as $to) {
+                    $resp = Http::withHeaders([
+                        'Authorization' => 'Bearer '.$token,
+                        'Content-Type'  => 'application/json',
+                    ])
+                        ->timeout(30)
+                        ->post($urlEmail, [
+                            'historyId' => 0,
+                            'receiptId' => (int) $receiptId,
+                            'email'     => $to,
+                            'language'  => 0,
+                        ]);
 
-            $customerEmail = $order->email;
-            $user_email = $customerEmail;
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Content-Type' => 'application/json',
-            ])->timeout(30)->post($url,
-                [
-                    'historyId' => 0,
-                    'receiptId' => (int)$receiptId,
-                    'email' => 'domusonline.web@gmail.com',
-                    'language' => 0
-                ]);
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Content-Type' => 'application/json',
-            ])->timeout(30)->post($url, [
-                'historyId' => 0,
-                'receiptId' => (int)$receiptId,
-                'email' => $user_email,
-                'language' => 0
-            ]);
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-                $logMessage = 'Response: ' . print_r($responseData, true) . '  ' . now()->format('d.m.Y H:i:s') . "\n";
-                File::append(storage_path('logs/hdm.log'), $logMessage);
-            } elseif ($response->status() === 400) {
-                $error_message = $response['message'] ?? 'Unknown error occurred';
-                $logMessage = 'Something went wrong: ' . print_r($error_message, true) . '  ' . now()->format('d.m.Y H:i:s') . "\n";
-                File::append(storage_path('logs/hdm.log'), $logMessage);
+                    if ($resp->successful()) {
+                        File::append(
+                            storage_path('logs/hdm.log'),
+                            'Email OK: '.print_r($resp->json(), true).' '.now()->format('d.m.Y H:i:s')."\n"
+                        );
+                    } elseif ($resp->status() === 400) {
+                        $error_message = $resp['message'] ?? 'Unknown error occurred';
+                        File::append(
+                            storage_path('logs/hdm.log'),
+                            'Email 400: '.print_r($error_message, true).' '.now()->format('d.m.Y H:i:s')."\n"
+                        );
+                    } else {
+                        File::append(
+                            storage_path('logs/hdm.log'),
+                            'Email FAIL: '.$resp->status().' '.$resp->body().' '.now()->format('d.m.Y H:i:s')."\n"
+                        );
+                    }
+                }
             }
         } else {
-            $error_message = $response->getBody();
-            $logMessage = 'Something went wrong: ' . print_r($error_message, true) . '  ' . now()->format('d.m.Y H:i:s') . "\n";
-            File::append(storage_path('logs/hdm.log'), $logMessage);
+            $error_message = is_object($response) ? $response->getBody() : 'empty response';
+            File::append(
+                storage_path('logs/hdm.log'),
+                'Something went wrong: '.print_r($error_message, true).'  '.now()->format('d.m.Y H:i:s')."\n"
+            );
         }
     }
+
 
     public function reverseHdm(): void
     {
