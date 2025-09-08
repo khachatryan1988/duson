@@ -22,7 +22,7 @@ class SendHdm extends Action
         return [
             Boolean::make('Send Email?', 'send_email')
                 ->help('If enabled, we will send an email after creating the HDM.')
-                ->default(true),
+                ->default(false),
         ];
     }
 
