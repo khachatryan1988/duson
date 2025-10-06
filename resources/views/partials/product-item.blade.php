@@ -31,25 +31,25 @@
                 @if(!empty($product->old_price))<del class="text-gray-400">{{$product->old_amount}}</del>@endif
                 <span>{{$product->amount}}</span>
             </p>
-{{--            @if($product->stock_quantity>=1)--}}
-{{--            <form action="{{route('add-to-cart')}}" method="post">--}}
-{{--                @csrf--}}
-{{--                <input type="hidden" value="{{$product->id}}" name="id">--}}
-{{--                <button--}}
-{{--                    type="submit"--}}
-{{--                    class="rounded-full w-full mt-4 bg-yellow-400 p-1.5 text-gray-700 shadow-sm hover:bg-yellow-400 hover:text-gray-900 hover:opacity-80"--}}
-{{--                >--}}
-{{--                    {{trans('Ավելացնել զամբյուղ')}}--}}
-{{--                </button>--}}
-{{--            </form>--}}
-{{--            @else--}}
-{{--                    <input type="hidden" value="{{$product->id}}" name="id">--}}
-{{--                    <button--}}
-{{--                        class="rounded-full w-full mt-4 bg-gray-100 p-1.5 text-gray-700 shadow-sm"--}}
-{{--                    >--}}
-{{--                        {{trans('Ավելացնել զամբյուղ')}}--}}
-{{--                    </button>--}}
-{{--            @endif--}}
+            @if($product->stock_quantity>=1)
+            <form action="{{route('add-to-cart')}}" method="post">
+                @csrf
+                <input type="hidden" value="{{$product->id}}" name="id">
+                <button
+                    type="submit"
+                    class="rounded-full w-full mt-4 bg-yellow-400 p-1.5 text-gray-700 shadow-sm hover:bg-yellow-400 hover:text-gray-900 hover:opacity-80"
+                >
+                    {{trans('Ավելացնել զամբյուղ')}}
+                </button>
+            </form>
+            @else
+                    <input type="hidden" value="{{$product->id}}" name="id">
+                    <button
+                        class="rounded-full w-full mt-4 bg-gray-100 p-1.5 text-gray-700 shadow-sm"
+                    >
+                        {{trans('Ավելացնել զամբյուղ')}}
+                    </button>
+            @endif
         </div>
     </div>
 </div>
