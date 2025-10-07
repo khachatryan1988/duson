@@ -112,35 +112,70 @@ trait CartTrait{
         return redirect()->back()->with(['status' => 'added', 'id' => $product->id]);
     }
 
-    public function updateCartItem(Request $request){
-        $hash = $request->id;
-        $newQty = max(1, (int)$request->input("quantity", 1));
-//        $this->cart()->updateItem($hash, [
-//            'quantity' => $request->input("quantity"),
-//        ]);
-//        return redirect()->back()->with(['status' => 'added']);
-        $cart = $this->cart();
-        $item = $cart->findItem($hash);
-        if (!$item) return redirect()->back();
+    public function updateCartItem(Request $request)
+    {
 
-        $product = Product::find($item->getId());
-        if (!$product) return redirect()->back();
-
-        $sync = app(ProductSyncFromOneC::class);
-        $live = $sync->sync($product);
-        $stock = max(0, (int)$live['stock']);
-        if ($stock <= 0) {
-            $cart->removeItem($hash);
-            return redirect()->back()->with(['status' => 'out_of_stock']);
-        }
-
-        $safeQty = min($newQty, $stock);
-        $cart->updateItem($hash, [
-            'quantity' => $safeQty,
-            'price'    => is_numeric($live['price'] ?? null) ? (int)$live['price'] : (int)$product->price,
+        $data = $request->validate([
+            'id'       => 'required|string',
+            'quantity' => 'required|integer|min:1|max:10', // максимум 10 как в UI
         ]);
 
-        return redirect()->back()->with(['status' => 'updated']);
+        $hash   = $data['id'];
+        $newQty = (int) $data['quantity'];
+
+        $cart = $this->cart();
+
+        $item = method_exists($cart, 'findItem')
+            ? $cart->findItem($hash)
+            : collect($cart->getItems())->first(fn($i) => $i->getHash() === $hash);
+
+        if (!$item) {
+            return $this->respondBack($request, ['status' => 'error', 'message' => 'Item not found'], 404);
+        }
+
+        $product = Product::find($item->getId());
+        if (!$product) {
+            return $this->respondBack($request, ['status' => 'error', 'message' => 'Product not found'], 404);
+        }
+
+        /** @var ProductSyncFromOneC $sync */
+        $sync = app(ProductSyncFromOneC::class);
+        $live = $sync->sync($product);
+
+        $stock = max(0, (int)($live['stock'] ?? $product->quantity ?? 0));
+        $price = is_numeric($live['price'] ?? null) ? (int)$live['price'] : (int)$product->price;
+
+        if ($stock <= 0) {
+            $cart->removeItem($hash);
+            return $this->respondBack($request, ['status' => 'out_of_stock']);
+        }
+
+
+        $safeQty = min($newQty, min($stock, 10));
+
+
+        $cart->updateItem($hash, [
+            'quantity' => $safeQty,
+            'price'    => $price, // держим цену актуальной
+        ]);
+
+        return $this->respondBack($request, [
+            'status'      => 'updated',
+            'quantity'    => $safeQty,
+            'unit_price'  => $price,
+            'line_total'  => $price * $safeQty,
+        ]);
+    }
+
+    /**
+     * Универсальный ответ: JSON для AJAX, redirect back для обычной формы.
+     */
+    private function respondBack(Request $request, array $payload, int $httpStatus = 200)
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($payload, $httpStatus);
+        }
+        return redirect()->back()->with($payload);
     }
 
 

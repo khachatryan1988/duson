@@ -134,16 +134,43 @@ class Product extends Model
         return null;
     }
 
-    public function getAlwaysStockAttribute()
-    {
-        $categoryIds = [111, 114, 115, 116, 117];
 
-        return $categoryIds;
+
+    public function isAlwaysInStock(): bool
+    {
+        $ids = array_map('intval', config('inventory.always_in_stock_categories', []));
+        return in_array((int)$this->category_id, $ids, true);
     }
 
-    public function getStockQuantityAttribute()
+
+    public function getEffectiveStockAttribute(): int
     {
-        return (in_array($this->category_id, $this->getAlwaysStockAttribute())) ? $this->quantity + 99999 : $this->quantity - 1;
+        if ($this->isAlwaysInStock()) {
+            return (int) config('inventory.always_in_stock_stock', 999999);
+        }
+        return max(0, (int) $this->quantity);
+    }
+
+
+
+
+
+
+//    public function getAlwaysStockAttribute()
+//    {
+//        $categoryIds = [111, 114, 115, 116, 117];
+//
+//        return $categoryIds;
+//    }
+
+//    public function getStockQuantityAttribute()
+//    {
+//        return (in_array($this->category_id, $this->getAlwaysStockAttribute())) ? $this->quantity + 99999 : $this->quantity - 1;
+//    }
+
+    public function getStockQuantityAttribute(): int
+    {
+        return $this->effective_stock;
     }
 
     public function getPriceStartDateAttribute()

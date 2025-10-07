@@ -55,16 +55,18 @@
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{ $item->getHash() }}">
                                                         @php
-                                                            $maxQuantity = \App\Models\Product::find($item->getId())->quantity ?? 10;
-                                                            $maxQuantityStock = $maxQuantity - 1;
+                                                            $p = \App\Models\Product::find($item->getId());
+                                                            $stockRaw = isset($p->effective_stock) ? (int)$p->effective_stock : (int)($p->quantity ?? 0);
+                                                            $maxQty = max(1, min(10, $stockRaw));
+                                                            $currentQty = max(1, min($maxQty, (int)$item->getQuantity()));
                                                         @endphp
-                                                        <select onchange="document.getElementById('update-{{ $item->getId() }}').submit()" id="quantity-{{ $item->getId() }}" name="quantity" class="block max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 sm:text-sm">
-                                                            @for ($i = 1; $i < 11; $i++)
-                                                                @if ($i < $maxQuantityStock)
-                                                                    <option value="{{ $i }}" {{ $item->getQuantity() == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                                                @elseif ($i == $maxQuantityStock)
-                                                                    <option value="{{ $maxQuantityStock }}" {{ $item->getQuantity() == $maxQuantityStock ? 'selected' : '' }}>{{ $maxQuantityStock }}</option>
-                                                                @endif
+                                                        <select
+                                                            onchange="document.getElementById('update-{{ $item->getId() }}').submit()"
+                                                            id="quantity-{{ $item->getId() }}"
+                                                            name="quantity"
+                                                            class="block max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 sm:text-sm">
+                                                            @for ($i = 1; $i <= $maxQty; $i++)
+                                                                <option value="{{ $i }}" {{ $currentQty === $i ? 'selected' : '' }}>{{ $i }}</option>
                                                             @endfor
                                                         </select>
                                                         <button type="submit" class="hidden">Submit</button>
