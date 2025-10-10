@@ -139,7 +139,7 @@ class Product1C
     public static function product_1c($data)
     {
         $client = new Client();
-        $ic_api = 'http://192.168.150.159';
+        $ic_api = 'http://178.160.203.146:1728';
         //http://62.89.21.215:11556
         //http://178.160.203.146:1728 //live
         //http://192.168.150.159 //local
